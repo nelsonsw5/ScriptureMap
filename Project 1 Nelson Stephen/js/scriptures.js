@@ -43,6 +43,7 @@ const Scriptures = (function () {
     let cacheBooks;
     let init;
     let onHashChanged;
+    let navigateHome;
 
     /*-------------------------------------------------------------------
      *                      PRIVATE METHODS
@@ -91,11 +92,7 @@ const Scriptures = (function () {
             callback();
         }
     };
-
-    /*-------------------------------------------------------------------
-     *                      PUBLIC API
-     */
-    function displayVolumes() {
+    navigateHome = function (volumeId) {
         let volumesList = "<ul>";
 
         volumes.forEach(function (volume) {
@@ -105,7 +102,13 @@ const Scriptures = (function () {
         volumesList += "</ul>";
 
         document.getElementById("scriptures").innerHTML = volumesList;
+
+        // NEEDS WORKS
     }
+
+    /*-------------------------------------------------------------------
+     *                      PUBLIC API
+     */
 
     init = function (callback) {
         let booksLoaded = false;
@@ -130,29 +133,45 @@ const Scriptures = (function () {
     };
 
     onHashChanged = function (event) {
-        if (!window.location.hash || typeof window.location.hash !== "string") {
+        let ids = [];
+        if (location.hash !== "" && location.hash.length > 1) {
+            ids = location.hash.slice(1).split(":");
+        }
+
+        if (ids.length <= 0) {
             navigateHome();
             return;
-        }
+        } else if (ids.length === 1){
+            const volumeId = Number(ids[0]);
 
-        let components = window.location.hash.slice(1).split(":");
+            console.log(volume.map((volume) => volume.id));
+            if (volumes.map((volume) => volume.id).includes(volumeId)) {
+                navigateHome(volumeId);
+            }
+            else{
+                navigateHome();
+            }
+        } else {
+            const bookID = Number(ids[1]);
 
-        if (components.length === 1) {
-            // Navigate to volume
+            if (books[bookId] === undefined){
+                navigateHome();
+            } else {
+                if (ids.length === 2){
+                    navigateBook(bookId);
+                } else {
+                    const chapter = Number(ids[2]);
+                    if (bookChapterValid(bookId, chapter)){
+                        navigateChapter(bookId, chapter);
+                    } else {
+                        navigateHome();
+                    }
+                }
+            }
         }
-        /*
-        If we have one ID, it’s a volume, so navigate to that volume
-        But if the volume ID is < 1 or > 5, it’s invalid, so navigate to “home”
-        If we have two ID’s, it’s a volume and book, so navigate to that book’s list of chapters
-        But if the volume or book ID is invalid, navigate “home”
-        If the book doesn’t have chapters, navigate to its content directly
-        If we have three ID’s, its volume, book, chapter, so navigate there if valid
-        If invalid, navigate “home”
-        */
     };
 
     return {
-        displayVolumes,
         init,
         onHashChanged
     };
