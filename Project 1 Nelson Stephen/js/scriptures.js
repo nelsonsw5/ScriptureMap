@@ -107,12 +107,9 @@ const Scriptures = (function () {
     }
     addBackToChapters = function () {
         let addBackToChapters = `<div id="backToChapters">`;
-        addBackToChapters += `<a href="#${currentVolume}:${currentBook}" class="previous">&laquo; ${books[currentBook]}</a>`;
+        addBackToChapters += `<a href="#${currentVolume}:${currentBook}" class=>&laquo; Back to Chapters</a>`;
         return `${addBackToChapters}</div>`;
     }
-
-
-
     bookChapterValid = function (bookId, chapter) {
         return true;
     };
@@ -125,19 +122,16 @@ const Scriptures = (function () {
         });
         return `${gridContent}</div>`;
     }
-
     booksGridContent = function (bookId){
         let gridContent = "";
         gridContent += `<div class="volume">${bookTitle(books[bookId])}</div>`;
         gridContent += chapterGrid(books[bookId]);
         return gridContent;
     }
-
     bookTitle = function (book){
-        return `<a href="#${book.id}"><h5>${book.fullName}</h5></a>`
+        return `<a href="#${currentVolume}"><h5>${book.fullName}</h5></a>`
 
     };
-
     cacheBooks = function (callback) {
         volumes.forEach(function (volume) {
             let volumeBooks = [];
@@ -155,7 +149,6 @@ const Scriptures = (function () {
             callback();
         }
     };
-
     chapterGrid = function (book) {
         let gridContent = `<div class="books">`;
         for (let i = 1; i < book.numChapters + 1; i++) {
@@ -163,7 +156,6 @@ const Scriptures = (function () {
          }
          return `${gridContent}</div>`;
     }
-
     encodedScripturesUrl = function (bookId, chapter, verses, isJst) {
         if (bookId !== undefined && chapter !== undefined) {
             let options = "";
@@ -178,7 +170,6 @@ const Scriptures = (function () {
         }
 
     };
-
     getGeoFromDom = function () {
         let nodes = document.querySelectorAll("a[onclick^=showLocation]");
         let geoplaces = [];
@@ -212,19 +203,19 @@ const Scriptures = (function () {
         });
         return uniquePlaces;
     };
-
     getScripturesFailure = function (request) {
         document.getElementById("scriptures").innerHTML = 
             `Unable to retrieve chapter contents.`
     }
-
     getScripturesSucces = function (chapterHtml) {
+        let updatedHtml = addBackForButtons();
         updatedHtml += chapterHtml
+        let bookChaptersBack = addBackToChapters();
+        updatedHtml += bookChaptersBack;
         document.getElementById("scriptures").innerHTML = updatedHtml;
         let domGeos = getGeoFromDom();
         let uniqueGeos = getUniqueGeoplaces(domGeos);
-        let updatedHtml = addBackForButtons();
-        let bookChaptersBack = addBackToChapters();
+        
     }
     indexOfMatchingPlace = function (array, geoplace) {
         let index = -1;
@@ -244,7 +235,6 @@ const Scriptures = (function () {
     };
     navigateChapter = function (bookId, chapter) {
         ajax(encodedScripturesUrl(bookId, chapter), getScripturesSucces, getScripturesFailure, true);
-
     }
     navigateHome = function (volumeId) {
         document.getElementById("scriptures").innerHTML = 
@@ -270,7 +260,6 @@ const Scriptures = (function () {
             map: map,
         });
     };
-
     volumesGridContent = function (volumeId){
         let gridContent = "";
         volumes.forEach(function (volume) {
@@ -281,17 +270,13 @@ const Scriptures = (function () {
         });
         return gridContent;
     }
-
     volumeTitle = function (volume){
-        return `<a href="#${volume.id}"><h5>${volume.fullName}</h5></a>`
+        return `<a href=""><h5>${volume.fullName}</h5></a>`
 
     };
-
     /*-------------------------------------------------------------------
      *                      PUBLIC API
      */
-    
-
     init = function (callback) {
         let booksLoaded = false;
         let volumesLoaded = false;
@@ -313,7 +298,6 @@ const Scriptures = (function () {
             }
         });
     };
-
     onHashChanged = function (event) {
         let ids = [];
         if (location.hash !== "" && location.hash.length > 1) {
@@ -323,7 +307,6 @@ const Scriptures = (function () {
             navigateHome();
             return;
         } else if (ids.length === 1){
-            
             const volumeId = Number(ids[0]);
             currentVolume = volumeId;
             if (volumes.map((volume) => volume.id).includes(volumeId)) {
@@ -339,6 +322,7 @@ const Scriptures = (function () {
                 navigateHome();
             } else {
                 if (ids.length === 2){
+                    currentVolume = Number(ids[0]);
                     navigateBook(bookId);
                 } else {
                     const chapter = Number(ids[2]);
@@ -352,10 +336,8 @@ const Scriptures = (function () {
             }
         }
     };
-
     return {
         init,
         onHashChanged
     };
-
 }());
